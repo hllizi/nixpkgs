@@ -32874,6 +32874,8 @@ with pkgs;
 
   MACS2 = callPackage ../applications/science/biology/MACS2 { };
 
+  mafft = callPackage ../applications/science/biology/mafft { };
+
   migrate = callPackage ../applications/science/biology/migrate { };
 
   minia = callPackage ../applications/science/biology/minia { };
