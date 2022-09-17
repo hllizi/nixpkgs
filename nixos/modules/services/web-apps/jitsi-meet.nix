@@ -56,6 +56,20 @@ in
       '';
     };
 
+    authenticationMode = mkOption {
+      type = str;
+      example = "anonymous";
+      default = "anonymous";
+      description = "Whether and how to authenticate users.";
+    };
+
+    admins = mkOption {
+      type = listOf str;
+      example = ["knood@jisit.meet.com"];
+      default = [];
+      description = "List of Admins.";
+    };
+
     config = mkOption {
       type = attrs;
       default = { };
@@ -200,7 +214,7 @@ in
           name = "Jitsi Meet Videobridge MUC";
           extraConfig = ''
             storage = "memory"
-            admins = { "focus@auth.${cfg.hostName}", "jvb@auth.${cfg.hostName}" }
+                admins = { "focus@auth.${cfg.hostName}", "jvb@auth.${cfg.hostName}" }
           '';
           #-- muc_room_cache_size = 1000
         }
@@ -220,13 +234,13 @@ in
         enabled = true;
         domain = cfg.hostName;
         extraConfig = ''
-          authentication = "anonymous"
-          c2s_require_encryption = false
-          admins = { "focus@auth.${cfg.hostName}" }
-          smacks_max_unacked_stanzas = 5
-          smacks_hibernation_time = 60
-          smacks_max_hibernated_sessions = 1
-          smacks_max_old_sessions = 1
+          authentication = ${cfg.authenticationMode} 
+            c2s_require_encryption = false
+            admins = { "focus@auth.${cfg.hostName}", ${lib.concatMapStrings (admin: "\"${admin}\",") cfg.admins}} 
+            smacks_max_unacked_stanzas = 5
+            smacks_hibernation_time = 60
+            smacks_max_hibernated_sessions = 1
+            smacks_max_old_sessions = 1
         '';
         ssl = {
           cert = "/var/lib/jitsi-meet/jitsi-meet.crt";
@@ -249,7 +263,7 @@ in
         domain = "recorder.${cfg.hostName}";
         extraConfig = ''
           authentication = "internal_plain"
-          c2s_require_encryption = false
+            c2s_require_encryption = false
         '';
       };
     };
@@ -416,6 +430,13 @@ in
         "org.jitsi.jicofo.jibri.BREWERY" = "JibriBrewery@internal.${cfg.hostName}";
         "org.jitsi.jicofo.jibri.PENDING_TIMEOUT" = "90";
       })];
+      jicofoConf = {
+        xmpp = {
+          client = {
+            client-proxy = "focus.${cfg.hostName}";
+          };
+        };
+      };
     };
 
     services.jibri = mkIf cfg.jibri.enable {

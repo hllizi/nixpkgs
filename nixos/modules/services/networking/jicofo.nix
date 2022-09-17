@@ -79,6 +79,21 @@ in
         Contents of the <filename>sip-communicator.properties</filename> configuration file for jicofo.
       '';
     };
+
+    jicofoConf = mkOption {
+      type = attrs;
+      default = null;
+      example = literalExpression ''
+          xmpp { 
+            client { 
+              client-proxy = focus.example.com
+            }
+          }
+        '';
+      description = ''
+          Config to be written to jicofo.conf.
+        '';
+      };
   };
 
   config = mkIf cfg.enable {
@@ -147,6 +162,21 @@ in
       );
     environment.etc."jitsi/jicofo/logging.properties".source =
       mkDefault "${pkgs.jicofo}/etc/jitsi/jicofo/logging.properties-journal";
+    environment.etc."jitsi/jicofo/jicofo.conf".text = 
+      if cfg.jicofoConf != null then
+      ''jicofo { 
+         xmpp { 
+          client { 
+           client-proxy = "focus.jtsmeet.hespere.de"
+          }
+         }
+        }
+     ''
+          else "";
+ 
+      
+
+       
   };
 
   meta.maintainers = lib.teams.jitsi.members;
